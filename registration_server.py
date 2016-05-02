@@ -89,7 +89,7 @@ def fetch(sequence_number, data, sock, address):
     message = struct.pack('>HBBB%s' % string_format, magic, sequence_number, 4, len(entries), *entries)    
     sock.sendto(message, address)
 
-def register(sequence_number, data, sock):
+def register(sequence_number, data, sock, address):
     print "register"
     length = len(data) - 11
     unpacked = struct.unpack('>4sH4sB%ds' % length, data)
@@ -115,7 +115,7 @@ def register(sequence_number, data, sock):
         lock.release()
     magic =  50273.0
     message = struct.pack('>HBBH', magic, sequence_number, 2, 5)    
-    sock.sendto(message, (ip, int(port)))
+    sock.sendto(message, address)
 
 def process(data, address, socket):
     length = len(data) - 12
@@ -126,7 +126,7 @@ def process(data, address, socket):
     command = unpacked[2]
     if command == 1:
         #go register
-        register(sequence_number, data[4:], socket)
+        register(sequence_number, data[4:], socket, address)
         # probe(address[0], address[1], socket)
         # print "send probe to %s : %d" % address
     elif command == 3:
