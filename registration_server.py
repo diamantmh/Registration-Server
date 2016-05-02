@@ -46,7 +46,7 @@ def ACK(sequence_number, socket, address):
     message = struct.pack('>HBB', magic, sequence_number, 7)    
     socket.sendto(message, address)
 
-def unregister(sequence_number, data, sock):
+def unregister(sequence_number, data, sock, address):
     print "unregister"
     unpacked = struct.unpack('>4sH', data)
     ip = socket.inet_ntoa(unpacked[0])
@@ -61,7 +61,7 @@ def unregister(sequence_number, data, sock):
             del registered[key]
     finally:
         lock.release()
-    ACK(sequence_number, sock, (ip, port))
+    ACK(sequence_number, sock, address)
 
 def fetch(sequence_number, data, sock, address):
     print "fetch"
@@ -134,7 +134,7 @@ def process(data, address, socket):
         fetch(sequence_number, data[4:], socket, address)
     elif command == 5:
         #go unregister
-        unregister(sequence_number, data[4:], socket)
+        unregister(sequence_number, data[4:], socket, address)
     elif command == 6:
         #received probe
         print "recieved probe from ip: %s port: %d" % (address[0], address[1])
