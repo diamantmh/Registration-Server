@@ -37,18 +37,18 @@ def probe(ip, port, sock):
     sequence_number = session_id = random.randint(0, 0xff)
     probes[(ip, port)] = (sequence_number, timer)
     magic =  50273.0
-    message = struct.pack('HBB', magic, sequence_number, 6)    
+    message = struct.pack('>HBB', magic, sequence_number, 6)    
     sock.sendto(message, (ip, port))
 
 def ACK(sequence_number, socket, address):
     print "ack"
     magic =  50273.0
-    message = struct.pack('HBB', magic, sequence_number, 7)    
+    message = struct.pack('>HBB', magic, sequence_number, 7)    
     socket.sendto(message, address)
 
 def unregister(sequence_number, data, sock):
     print "unregister"
-    unpacked = struct.unpack('4sH', data)
+    unpacked = struct.unpack('>4sH', data)
     ip = socket.inet_ntoa(unpacked[0])
     port = unpacked[1]
     lock.acquire()
@@ -66,7 +66,7 @@ def unregister(sequence_number, data, sock):
 def fetch(sequence_number, data, sock, address):
     print "fetch"
     length = len(data) - 1
-    unpacked = struct.unpack('B%ds' % length, data)
+    unpacked = struct.unpack('>B%ds' % length, data)
     name = unpacked[1]
     # 0xC461,  seqnum, 0x03,  len , service name
     entries = []
@@ -79,20 +79,20 @@ def fetch(sequence_number, data, sock, address):
                 ip = key[1]
                 port = key[2]
                 data = registered[key][0]
-                entries.append(struct.pack('4sH4s', ip, port, data))
+                entries.append(struct.pack('>4sH4s', ip, port, data))
     finally:
         lock.release()
     magic =  50273.0
     string_format = ''
     for i in range(len(entries)):
         string_format += '10s'
-    message = struct.pack('HBBB%s' % string_format, magic, sequence_number, 4, len(entries), *entries)    
+    message = struct.pack('>HBBB%s' % string_format, magic, sequence_number, 4, len(entries), *entries)    
     sock.sendto(message, address)
 
 def register(sequence_number, data, sock):
     print "register"
     length = len(data) - 11
-    unpacked = struct.unpack('4sH4sB%ds' % length, data)
+    unpacked = struct.unpack('>4sH4sB%ds' % length, data)
     ip = socket.inet_ntoa(unpacked[0])
     port = unpacked[1]
     data = unpacked[2]
@@ -114,13 +114,13 @@ def register(sequence_number, data, sock):
     finally:
         lock.release()
     magic =  50273.0
-    message = struct.pack('HBBH', magic, sequence_number, 2, 5)    
+    message = struct.pack('>HBBH', magic, sequence_number, 2, 5)    
     sock.sendto(message, (ip, int(port)))
 
 def process(data, address, socket):
     length = len(data) - 12
     header = data[:4]
-    unpacked = struct.unpack('HBB', header)
+    unpacked = struct.unpack('>HBB', header)
     # magic number, sequence_number, command
     sequence_number = unpacked[1]
     command = unpacked[2]
