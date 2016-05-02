@@ -76,10 +76,10 @@ def fetch(sequence_number, data, sock, address):
             if len(entries) > 100:
                 break
             if name in key[0]:
-                ip = key[1]
+                ip = ip2int(key[1])
                 port = key[2]
                 data = registered[key][0]
-                entries.append(struct.pack('>4sH4s', ip, port, data))
+                entries.append(struct.pack('>IH4s', ip, port, data))
     finally:
         lock.release()
     magic =  50273.0
@@ -179,6 +179,10 @@ def main(port):
             break
         except Exception as e:
             print e 
+
+def ip2int(addr):  
+    num = struct.unpack("!I", socket.inet_aton(addr))[0]
+    return num
 
  
 if __name__ == "__main__":
