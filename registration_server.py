@@ -160,9 +160,13 @@ def process(data, address, socket):
             del probes[address]
     
 
-def main(port):
+def main(hostname, port):
+    if hostname == 'localhost':
+        host = "0.0.0.0"
+    else:
+        host = socket.gethostbyname(hostname)
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.bind(("0.0.0.0", port))   
+    s.bind((host, port))   
     print "Listening on port %s" % port
     while True:
         try:
@@ -199,7 +203,9 @@ def ip2int(addr):
 
  
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        main(int(sys.argv[1]))
+    if len(sys.argv) > 2:
+        print "running on %s" % sys.argv[1]
+        main(sys.argv[1], int(sys.argv[2]))
     else:
-        main(33433)
+        print "running on locahost"
+        main("localhost", 33433)
