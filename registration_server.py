@@ -75,7 +75,7 @@ def fetch(sequence_number, data, sock, address):
         for key in registered:
             if len(entries) > 100:
                 break
-            if name in key[0]:
+            if name == '' or name in key[0]:
                 ip = ip2int(key[1])
                 port = key[2]
                 data = registered[key][0]
@@ -99,8 +99,10 @@ def register(sequence_number, data, sock, address):
     name = unpacked[4]
     lock.acquire()
     key = (name, ip, port)
-    print key
+    # print key
     try:
+        if (ip, port) in address_to_name and address_to_name[(ip, port)] != name:
+            return
         if key in registered:
             registered[key][1].cancel()
             timer = Timer(30.0, timeout, [ip, port])
@@ -127,6 +129,7 @@ def process(data, address, socket):
     if command == 1:
         #go register
         register(sequence_number, data[4:], socket, address)
+        print registered
         # probe(address[0], address[1], socket)
         # print "send probe to %s : %d" % address
     elif command == 3:
