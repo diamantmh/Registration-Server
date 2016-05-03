@@ -35,9 +35,13 @@ def probe(ip, port, sock):
     timer = Timer(5.0, timeout, [ip, port])
     timer.start()
     sequence_number = session_id = random.randint(0, 0xff)
-    name = address_to_name[(ip, port)]
-    key = (name, ip, port)
-    registration_agent = registered[key][2]
+    lock.acquire()
+    try:
+        name = address_to_name[(ip, port)]
+        key = (name, ip, port)
+        registration_agent = registered[key][2]
+    finally:
+        lock.release()
     probes[(ip, registration_agent)] = (sequence_number, timer)
     magic =  50273.0
     message = struct.pack('>HBB', magic, sequence_number, 6)    
