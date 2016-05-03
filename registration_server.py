@@ -107,7 +107,7 @@ def register(sequence_number, data, sock, address):
         if (ip, port) in address_to_name and address_to_name[(ip, port)] != name:
             old_name = address_to_name[(ip, port)]
             registered[(old_name, ip, port)][1].cancel()
-            timer = Timer(30.0, timeout, [ip, port])
+            timer = Timer(240.0, timeout, [ip, port])
             timer.start()
             del registered[(old_name, ip, port)]
             del address_to_name[(ip, port)]
@@ -115,12 +115,12 @@ def register(sequence_number, data, sock, address):
             address_to_name[(ip, port)] = name
         elif key in registered:
             registered[key][1].cancel()
-            timer = Timer(30.0, timeout, [ip, port])
+            timer = Timer(240.0, timeout, [ip, port])
             timer.start()
             registered[key] = (data, timer, int(address[1]) + 1)
         else:
             address_to_name[(ip, port)] = name
-            timer = Timer(10.0, timeout, [ip, port])
+            timer = Timer(240.0, timeout, [ip, port])
             timer.start()
             registered[key] = (data, timer, int(address[1]) + 1)
     finally:
@@ -139,7 +139,7 @@ def process(data, address, socket):
     if command == 1:
         #go register
         register(sequence_number, data[4:], socket, address)
-        print registered
+        # print registered
         # probe(address[0], address[1], socket)
         # print "send probe to %s : %d" % address
     elif command == 3:
