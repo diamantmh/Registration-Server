@@ -118,7 +118,7 @@ def register(sequence_number, data, sock, address):
             timer = Timer(30.0, timeout, [ip, port])
             timer.start()
             registered[key] = (data, timer, int(address[1]) + 1)
-        elif:
+        else:
             address_to_name[(ip, port)] = name
             timer = Timer(10.0, timeout, [ip, port])
             timer.start()
