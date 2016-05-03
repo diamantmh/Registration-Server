@@ -11,7 +11,7 @@ import os
 # (ip, port) - > name
 address_to_name = {}
 
-# (name, ip, port) - > (data, timer)
+# (name, ip, port) - > (data, timer, src)
 registered = {}
 
 # (ip, port) -> (seq_num, timer)
@@ -35,10 +35,13 @@ def probe(ip, port, sock):
     timer = Timer(5.0, timeout, [ip, port])
     timer.start()
     sequence_number = session_id = random.randint(0, 0xff)
-    probes[(ip, port)] = (sequence_number, timer)
+    name = address_to_name[(ip, port)]
+    key = (name, ip port)
+    registration_agent = registered[key][2]
+    probes[(ip, registration_agent)] = (sequence_number, timer)
     magic =  50273.0
     message = struct.pack('>HBB', magic, sequence_number, 6)    
-    sock.sendto(message, (ip, port))
+    sock.sendto(message, (ip, registration_agent))
 
 def ACK(sequence_number, socket, address):
     print "ack"
@@ -102,17 +105,24 @@ def register(sequence_number, data, sock, address):
     # print key
     try:
         if (ip, port) in address_to_name and address_to_name[(ip, port)] != name:
-            return
-        if key in registered:
+            old_name = address_to_name[(ip, port)]
+            registered[(old_name, ip, port)][1].cancel()
+            timer = Timer(30.0, timeout, [ip, port])
+            timer.start()
+            del registered[(old_name, ip, port)]
+            del address_to_name[(ip, port)]
+            registered[key] = (data, timer, int(address[1]) + 1)
+            address_to_name[(ip, port)] = name
+        elif key in registered:
             registered[key][1].cancel()
             timer = Timer(30.0, timeout, [ip, port])
             timer.start()
-            registered[key] = (data, timer)
-        else:
+            registered[key] = (data, timer, int(address[1]) + 1)
+        elif:
             address_to_name[(ip, port)] = name
             timer = Timer(10.0, timeout, [ip, port])
             timer.start()
-            registered[key] = (data, timer)
+            registered[key] = (data, timer, int(address[1]) + 1)
     finally:
         lock.release()
     magic =  50273.0
