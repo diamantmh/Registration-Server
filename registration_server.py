@@ -36,7 +36,7 @@ def probe(ip, port, sock):
     timer.start()
     sequence_number = session_id = random.randint(0, 0xff)
     name = address_to_name[(ip, port)]
-    key = (name, ip port)
+    key = (name, ip, port)
     registration_agent = registered[key][2]
     probes[(ip, registration_agent)] = (sequence_number, timer)
     magic =  50273.0
